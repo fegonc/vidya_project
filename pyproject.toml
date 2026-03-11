@@ -1,0 +1,25 @@
+[project]
+name = "vidya-project"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Felipe Goncalves",email = "felipeepires.95@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "fastapi[standard] (>=0.132.0,<0.133.0)",
+    "sqlalchemy (>=2.0.46,<3.0.0)",
+    "alembic (>=1.18.4,<2.0.0)",
+    "motor (>=3.7.1,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "debugpy (>=1.8.20,<2.0.0)"
+]

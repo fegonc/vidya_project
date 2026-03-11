@@ -1,0 +1,5 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:poetry",
+    "python-envs.defaultPackageManager": "ms-python.python:poetry",
+    "python.defaultInterpreterPath": "C:/Users/077691631/AppData/Local/pypoetry/Cache/virtualenvs/vidya-project-aaKnOqPa-py3.12/Scripts/python.exe"
+}
