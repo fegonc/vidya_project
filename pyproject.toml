@@ -21,5 +21,8 @@ build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
 dev = [
-    "debugpy (>=1.8.20,<2.0.0)"
+    "debugpy (>=1.8.20,<2.0.0)",
+    "pytest (>=9.1.1,<10.0.0)",
+    "pytest-asyncio (>=1.4.0,<2.0.0)",
+    "httpx (>=0.28.1,<0.29.0)"
 ]
