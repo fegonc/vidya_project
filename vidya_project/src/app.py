@@ -10,7 +10,8 @@ from vidya_project.src.models import Vendas
 from vidya_project.src.mongo_database import get_mongo_db, mongo_client
 from vidya_project.src.mongo_models import (SaleComment, SaleCommentCreate,
                                             SaleCommentResponse)
-from vidya_project.src.schemas import VendaResponse, VendaSchema, VendasList
+from vidya_project.src.schemas import (SaleWithCommentResponse, VendaResponse,
+                                        VendaSchema, VendasList)
 
 
 @asynccontextmanager
@@ -127,4 +128,54 @@ async def create_comment(
         **comment.model_dump()
     )
 
+
+
+# ===== BUSCA TEXTUAL POR COMENTÁRIO =====
+@app.get('/sales/search_by_comment/', response_model=list[SaleWithCommentResponse])
+async def search_sales_by_comment(
+    q: str = Query(..., min_length=1, description="Texto a buscar nos comentários"),
+    session=Depends(get_session),
+    mongo_db=Depends(get_mongo_db)
+):
+    """
+    Busca vendas cujos comentários contenham o texto informado.
+
+    Exemplos:
+    - /sales/search_by_comment/?q=entrega
+    - /sales/search_by_comment/?q=cliente elogiou
+    """
+    # 1. Busca no MongoDB com regex case-insensitive
+    collection = mongo_db["sale_comments"]
+    cursor = collection.find({"text": {"$regex": q, "$options": "i"}})
+    matched_comments = await cursor.to_list(length=None)
+
+    if not matched_comments:
+        return []
+
+    # 2. Busca as vendas correspondentes no SQLite
+    sale_ids = [c["sale_id"] for c in matched_comments]
+    vendas = session.scalars(select(Vendas).where(Vendas.id.in_(sale_ids))).all()
+    vendas_map = {v.id: v for v in vendas}
+
+    # 3. Monta a resposta combinando venda + comentário
+    results = []
+    for comment in matched_comments:
+        venda = vendas_map.get(comment["sale_id"])
+        if venda is None:
+            continue  # comentário órfão (venda deletada), ignorar
+        results.append(
+            SaleWithCommentResponse(
+                id=venda.id,
+                product_name=venda.product_name,
+                category=venda.category,
+                quantity=venda.quantity,
+                unit_price=venda.unit_price,
+                sale_date=venda.sale_date,
+                comment_id=str(comment["_id"]),
+                comment_text=comment["text"],
+                comment_created_at=comment["created_at"],
+            )
+        )
+
+    return results
 
